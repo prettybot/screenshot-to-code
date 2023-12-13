@@ -64,6 +64,9 @@ async def stream_code(websocket: WebSocket):
     # Get the OpenAI API key from the request. Fall back to environment variable if not provided.
     # If neither is provided, we throw an error.
     openai_api_key = None
+    azure_openai_api_key = os.environ.get("AZURE_OPENAI_API_KEY", "")
+    azure_openai_resource_name = os.environ.get("AZURE_OPENAI_RESOURCE_NAME")
+    azure_openai_deployment_name = os.environ.get("AZURE_OPENAI_DEPLOYMENT_NAME")
     if "accessCode" in params and params["accessCode"]:
         print("Access code - using platform API key")
         res = await validate_access_token(params["accessCode"])
@@ -87,14 +90,15 @@ async def stream_code(websocket: WebSocket):
                 print("Using OpenAI API key from environment variable")
 
     if not openai_api_key:
-        print("OpenAI API key not found")
-        await websocket.send_json(
-            {
-                "type": "error",
-                "value": "No OpenAI API key found. Please add your API key in the settings dialog or add it to backend/.env file.",
-            }
-        )
-        return
+        openai_api_key = ""
+        # print("OpenAI API key not found")
+        # await websocket.send_json(
+        #     {
+        #         "type": "error",
+        #         "value": "No OpenAI API key found. Please add your API key in the settings dialog or add it to backend/.env file.",
+        #     }
+        # )
+        # return
 
     # Get the OpenAI Base URL from the request. Fall back to environment variable if not provided.
     openai_base_url = None
@@ -110,6 +114,7 @@ async def stream_code(websocket: WebSocket):
 
     if not openai_base_url:
         print("Using official OpenAI URL")
+
 
     # Get the image generation flag from the request. Fall back to True if not provided.
     should_generate_images = (
@@ -192,8 +197,9 @@ async def stream_code(websocket: WebSocket):
         try:
             completion = await stream_openai_response(
                 prompt_messages,
-                api_key=openai_api_key,
-                base_url=openai_base_url,
+                azure_openai_api_key=azure_openai_api_key,
+                azure_openai_resource_name=azure_openai_resource_name,
+                azure_openai_deployment_name=azure_openai_deployment_name,
                 callback=lambda x: process_chunk(x),
             )
         except openai.AuthenticationError as e:

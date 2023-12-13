@@ -38,6 +38,13 @@ poetry shell
 poetry run uvicorn main:app --reload --port 7001
 ```
 
+For Azure version, you need to add some additional environment keys:
+```bash
+echo "AZURE_OPENAI_API_KEY=sk-your-key" > .env
+echo "AZURE_OPENAI_RESOURCE_NAME=sk-your-key" > .env
+echo "AZURE_OPENAI_DEPLOYMENT_NAME=sk-your-key" > .env
+```
+
 Run the frontend:
 
 ```bash

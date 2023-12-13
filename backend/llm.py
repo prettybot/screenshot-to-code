@@ -1,5 +1,5 @@
 from typing import Awaitable, Callable, List
-from openai import AsyncOpenAI
+from openai import AsyncAzureOpenAI
 from openai.types.chat import ChatCompletionMessageParam, ChatCompletionChunk
 
 MODEL_GPT_4_VISION = "gpt-4-vision-preview"
@@ -7,11 +7,17 @@ MODEL_GPT_4_VISION = "gpt-4-vision-preview"
 
 async def stream_openai_response(
     messages: List[ChatCompletionMessageParam],
-    api_key: str,
-    base_url: str | None,
+    azure_openai_api_key: str,
+    azure_openai_resource_name: str | None,
+    azure_openai_deployment_name: str | None,
     callback: Callable[[str], Awaitable[None]],
 ) -> str:
-    client = AsyncOpenAI(api_key=api_key, base_url=base_url)
+    client = AsyncAzureOpenAI(
+        api_version="2023-12-01-preview",
+        api_key=azure_openai_api_key,
+        azure_endpoint=f"https://{azure_openai_resource_name}.openai.azure.com/",
+        azure_deployment=azure_openai_deployment_name
+)
 
     model = MODEL_GPT_4_VISION
 
